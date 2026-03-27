@@ -10,9 +10,9 @@ from urllib.error import URLError
 from xml.sax.saxutils import escape
 
 HF_API_URL = "https://huggingface.co/api/daily_papers"
-FEED_URL = "https://brandonhawi.github.io/rss-feed-creator/feed.xml"
+FEED_URL = "https://brandonhawi.github.io/rss-feed-creator/hf-daily-papers/feed.xml"
 SITE_URL = "https://huggingface.co/papers"
-OUTPUT_FILE = Path(__file__).parent / "feed.xml"
+OUTPUT_FILE = Path(__file__).parent / "hf-daily-papers" / "feed.xml"
 
 
 def fetch_papers() -> list[dict]:

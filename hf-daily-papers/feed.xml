@@ -5,8 +5,8 @@
     <link>https://huggingface.co/papers</link>
     <description>Daily ML/AI papers curated by the Hugging Face community</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 27 Mar 2026 13:25:51 +0000</lastBuildDate>
-    <atom:link href="https://brandonhawi.github.io/rss-feed-creator/feed.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Fri, 27 Mar 2026 13:27:24 +0000</lastBuildDate>
+    <atom:link href="https://brandonhawi.github.io/rss-feed-creator/hf-daily-papers/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>PMT: Plain Mask Transformer for Image and Video Segmentation with Frozen Vision Encoders</title>
       <link>https://huggingface.co/papers/2603.25398</link>
