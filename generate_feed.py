@@ -98,6 +98,11 @@ def build_feed(papers: list[dict]) -> str:
     <language>en-us</language>
     <lastBuildDate>{now}</lastBuildDate>
     <atom:link href="{FEED_URL}" rel="self" type="application/rss+xml"/>
+    <image>
+      <url>https://huggingface.co/favicon.ico</url>
+      <title>Hugging Face Daily Papers</title>
+      <link>{SITE_URL}</link>
+    </image>
 {items_xml}
   </channel>
 </rss>
