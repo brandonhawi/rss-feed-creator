@@ -76,7 +76,7 @@ def build_feed(papers: list[dict]) -> str:
         title = escape(p.get("title", "Untitled"))
         link = f"https://huggingface.co/papers/{arxiv_id}"
         guid = f"https://arxiv.org/abs/{arxiv_id}"
-        pub_date = rfc822(p.get("publishedAt", datetime.now(timezone.utc).isoformat()))
+        pub_date = rfc822(p.get("submittedOnDailyAt", p.get("publishedAt", datetime.now(timezone.utc).isoformat())))
         description = build_description(paper)
 
         items.append(f"""    <item>
