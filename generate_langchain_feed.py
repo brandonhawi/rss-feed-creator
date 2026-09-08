@@ -1,132 +1,150 @@
 #!/usr/bin/env python3
-"""Generate a filtered Atom feed of LangChain releases.
-
-GitHub's releases.atom for langchain-ai/langchain mixes every package in the
-monorepo (langchain-core, langchain-openai, langchain-anthropic, ...). This
-script keeps only releases of the base ``langchain`` package, whose tags look
-like ``langchain==1.4.0``.
-
-The upstream feed only carries the 10 most recent releases across all
-packages, so each run merges new matching entries into the previously
-generated feed to accumulate history over time.
-"""
 
 import re
 import sys
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-SOURCE_URL = "https://github.com/langchain-ai/langchain/releases.atom"
-RELEASES_URL = "https://github.com/langchain-ai/langchain/releases"
-FEED_URL = "https://brandonhawi.github.io/rss-feed-creator/langchain-releases/feed.xml"
-OUTPUT_FILE = Path(__file__).parent / "langchain-releases" / "feed.xml"
 
-# Only keep releases of this package. Tags are formatted "<package>==<version>".
-PACKAGE = "langchain"
-TITLE_PATTERN = re.compile(rf"^{re.escape(PACKAGE)}==")
-
-# Keep at most this many entries in the generated feed.
-MAX_ENTRIES = 100
-
-ATOM_NS = "http://www.w3.org/2005/Atom"
-MEDIA_NS = "http://search.yahoo.com/mrss/"
-ET.register_namespace("", ATOM_NS)
-ET.register_namespace("media", MEDIA_NS)
+class UpstreamGitHub:
+    releases_feed_url = "https://github.com/langchain-ai/langchain/releases.atom"
+    releases_page_url = "https://github.com/langchain-ai/langchain/releases"
+    user_agent = "rss-feed-creator/1.0"
+    timeout_seconds = 30
 
 
-def atom(tag: str) -> str:
-    return f"{{{ATOM_NS}}}{tag}"
+class BasePackage:
+    name = "langchain"
+    release_title = re.compile(rf"^{re.escape(name)}==")
 
 
-def fetch_source() -> bytes:
-    req = Request(SOURCE_URL, headers={"User-Agent": "rss-feed-creator/1.0"})
-    with urlopen(req, timeout=30) as resp:
-        return resp.read()
-
-
-def parse_entries(xml_bytes: bytes) -> list[ET.Element]:
-    root = ET.fromstring(xml_bytes)
-    return root.findall(atom("entry"))
-
-
-def entry_text(entry: ET.Element, tag: str) -> str:
-    el = entry.find(atom(tag))
-    return (el.text or "").strip() if el is not None else ""
-
-
-def is_base_package_release(entry: ET.Element) -> bool:
-    return bool(TITLE_PATTERN.match(entry_text(entry, "title")))
-
-
-def load_existing_entries() -> list[ET.Element]:
-    if not OUTPUT_FILE.exists():
-        return []
-    try:
-        return parse_entries(OUTPUT_FILE.read_bytes())
-    except ET.ParseError as e:
-        print(f"Warning: could not parse existing feed, starting fresh: {e}", file=sys.stderr)
-        return []
-
-
-def merge_entries(existing: list[ET.Element], new: list[ET.Element]) -> list[ET.Element]:
-    """Merge by entry id; new entries win. Newest first, capped at MAX_ENTRIES."""
-    by_id: dict[str, ET.Element] = {}
-    for entry in existing + new:
-        entry_id = entry_text(entry, "id")
-        if entry_id:
-            by_id[entry_id] = entry
-    merged = sorted(by_id.values(), key=lambda e: entry_text(e, "updated"), reverse=True)
-    return merged[:MAX_ENTRIES]
-
-
-def build_feed(entries: list[ET.Element]) -> str:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    updated = entry_text(entries[0], "updated") if entries else now
-
-    feed = ET.Element(atom("feed"), {"{http://www.w3.org/XML/1998/namespace}lang": "en-US"})
-    ET.SubElement(feed, atom("id")).text = FEED_URL
-    ET.SubElement(feed, atom("title")).text = "LangChain Releases"
-    ET.SubElement(feed, atom("subtitle")).text = (
-        f"Releases of the {PACKAGE} package from langchain-ai/langchain, "
+class PublishedFeed:
+    url = "https://brandonhawi.github.io/rss-feed-creator/langchain-releases/feed.xml"
+    file = Path(__file__).parent / "langchain-releases" / "feed.xml"
+    title = "LangChain Releases"
+    subtitle = (
+        f"Releases of the {BasePackage.name} package from langchain-ai/langchain, "
         "filtered from the GitHub releases feed"
     )
-    ET.SubElement(feed, atom("link"), {"rel": "alternate", "type": "text/html", "href": RELEASES_URL})
-    ET.SubElement(feed, atom("link"), {"rel": "self", "type": "application/atom+xml", "href": FEED_URL})
-    ET.SubElement(feed, atom("updated")).text = updated
+    language = "en-US"
+    maximum_entries = 100
+
+
+class XmlNamespace:
+    atom = "http://www.w3.org/2005/Atom"
+    media_rss = "http://search.yahoo.com/mrss/"
+    xml = "http://www.w3.org/XML/1998/namespace"
+
+
+ElementTree.register_namespace("", XmlNamespace.atom)
+ElementTree.register_namespace("media", XmlNamespace.media_rss)
+
+
+def atom_element(name: str) -> str:
+    return f"{{{XmlNamespace.atom}}}{name}"
+
+
+def xml_attribute(name: str) -> str:
+    return f"{{{XmlNamespace.xml}}}{name}"
+
+
+def download_upstream_releases_feed() -> bytes:
+    request = Request(UpstreamGitHub.releases_feed_url, headers={"User-Agent": UpstreamGitHub.user_agent})
+    with urlopen(request, timeout=UpstreamGitHub.timeout_seconds) as response:
+        return response.read()
+
+
+def entries_in(feed_xml: bytes) -> list[ElementTree.Element]:
+    return ElementTree.fromstring(feed_xml).findall(atom_element("entry"))
+
+
+def text_of(entry: ElementTree.Element, element_name: str) -> str:
+    element = entry.find(atom_element(element_name))
+    if element is None or element.text is None:
+        return ""
+    return element.text.strip()
+
+
+def is_release_of_base_package(entry: ElementTree.Element) -> bool:
+    return BasePackage.release_title.match(text_of(entry, "title")) is not None
+
+
+def entries_already_published() -> list[ElementTree.Element]:
+    if not PublishedFeed.file.exists():
+        return []
+    try:
+        return entries_in(PublishedFeed.file.read_bytes())
+    except ElementTree.ParseError as parse_error:
+        print(f"Warning: could not parse the published feed, starting fresh: {parse_error}", file=sys.stderr)
+        return []
+
+
+def merged_newest_first(
+    published_entries: list[ElementTree.Element],
+    upstream_entries: list[ElementTree.Element],
+) -> list[ElementTree.Element]:
+    entries_by_id: dict[str, ElementTree.Element] = {}
+    for entry in published_entries + upstream_entries:
+        entry_id = text_of(entry, "id")
+        if entry_id:
+            entries_by_id[entry_id] = entry
+    newest_first = sorted(entries_by_id.values(), key=lambda entry: text_of(entry, "updated"), reverse=True)
+    return newest_first[: PublishedFeed.maximum_entries]
+
+
+def current_utc_timestamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def render_feed_containing(entries: list[ElementTree.Element]) -> str:
+    feed = ElementTree.Element(atom_element("feed"), {xml_attribute("lang"): PublishedFeed.language})
+    ElementTree.SubElement(feed, atom_element("id")).text = PublishedFeed.url
+    ElementTree.SubElement(feed, atom_element("title")).text = PublishedFeed.title
+    ElementTree.SubElement(feed, atom_element("subtitle")).text = PublishedFeed.subtitle
+    ElementTree.SubElement(
+        feed, atom_element("link"), {"rel": "alternate", "type": "text/html", "href": UpstreamGitHub.releases_page_url}
+    )
+    ElementTree.SubElement(
+        feed, atom_element("link"), {"rel": "self", "type": "application/atom+xml", "href": PublishedFeed.url}
+    )
+    ElementTree.SubElement(feed, atom_element("updated")).text = (
+        text_of(entries[0], "updated") if entries else current_utc_timestamp()
+    )
     feed.extend(entries)
+    ElementTree.indent(feed, space="  ")
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ElementTree.tostring(feed, encoding="unicode") + "\n"
 
-    ET.indent(feed, space="  ")
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
+
+def exit_with_error(message: str) -> None:
+    print(message, file=sys.stderr)
+    sys.exit(1)
 
 
-def main():
+def main() -> None:
     try:
-        source = fetch_source()
-    except URLError as e:
-        print(f"Error fetching releases feed: {e}", file=sys.stderr)
-        sys.exit(1)
+        upstream_feed = download_upstream_releases_feed()
+    except URLError as download_error:
+        exit_with_error(f"Error fetching releases feed: {download_error}")
 
     try:
-        upstream = parse_entries(source)
-    except ET.ParseError as e:
-        print(f"Error parsing releases feed: {e}", file=sys.stderr)
-        sys.exit(1)
+        upstream_entries = entries_in(upstream_feed)
+    except ElementTree.ParseError as parse_error:
+        exit_with_error(f"Error parsing releases feed: {parse_error}")
 
-    if not upstream:
-        print("No entries returned from releases feed", file=sys.stderr)
-        sys.exit(1)
+    if not upstream_entries:
+        exit_with_error("No entries returned from releases feed")
 
-    matching = [e for e in upstream if is_base_package_release(e)]
-    entries = merge_entries(load_existing_entries(), matching)
+    base_package_releases = [entry for entry in upstream_entries if is_release_of_base_package(entry)]
+    feed_entries = merged_newest_first(entries_already_published(), base_package_releases)
 
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_FILE.write_text(build_feed(entries), encoding="utf-8")
+    PublishedFeed.file.parent.mkdir(parents=True, exist_ok=True)
+    PublishedFeed.file.write_text(render_feed_containing(feed_entries), encoding="utf-8")
     print(
-        f"Generated feed.xml: {len(matching)} of {len(upstream)} upstream releases matched "
-        f"'{PACKAGE}==', {len(entries)} entries total"
+        f"Generated feed.xml: {len(base_package_releases)} of {len(upstream_entries)} upstream releases "
+        f"matched '{BasePackage.name}==', {len(feed_entries)} entries total"
     )
 
 
