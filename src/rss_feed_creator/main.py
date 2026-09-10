@@ -1,4 +1,5 @@
 """Generate a static RSS feed from Hugging Face daily papers API."""
+from collections.abc import Iterable
 from email.utils import format_datetime
 import sys
 from datetime import datetime, timezone
@@ -10,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 FEED_URL = "https://brandonhawi.github.io/rss-feed-creator/hf-daily-papers/feed.xml"
 SITE_URL = "https://huggingface.co/papers"
-OUTPUT_FILE = Path(__file__).parent / "hf-daily-papers" / "feed.xml"
+OUTPUT_FILE = Path("./hf-daily-papers/feed.xml")
 ATOM = "http://www.w3.org/2005/Atom"
 ET.register_namespace("atom", ATOM)
 
@@ -25,7 +26,7 @@ def build_description(paper: PaperInfo) -> str:
     {paragraph_tag("Abstract", summary)}"""
 
 
-def build_feed(papers: list[PaperInfo]) -> bytes:
+def build_feed(papers: Iterable[PaperInfo]) -> bytes:
     rss = ET.Element("rss", version="2.0")
     ch = ET.SubElement(rss, "channel")
     ET.SubElement(ch, "title").text = "Hugging Face Daily Papers"
@@ -61,4 +62,4 @@ def generate_feed():
 
     feed = build_feed(papers)
     OUTPUT_FILE.write_bytes(feed)
-    print(f"Generated feed.xml with {len(papers)} papers")
+    print(f"Generated feed.xml")

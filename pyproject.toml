@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-rss-feed-creator = "rss_feed_creator:main"
+rss-feed-creator = "rss_feed_creator.main:generate_feed"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
