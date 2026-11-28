@@ -5,13 +5,29 @@
     <link>https://huggingface.co/papers</link>
     <description>Daily ML/AI papers curated by the Hugging Face community</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 27 Nov 2026 17:45:37 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 28 Nov 2026 16:31:31 +0000</lastBuildDate>
     <atom:link href="https://brandonhawi.github.io/rss-feed-creator/hf-daily-papers/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://huggingface.co/favicon.ico</url>
       <title>Hugging Face Daily Papers</title>
       <link>https://huggingface.co/papers</link>
     </image>
+    <item>
+      <title>LayoutRecall: Preserving Appearance in Multi-Round 3D Layout-Controlled Image Editing</title>
+      <link>https://huggingface.co/papers/2611.33885</link>
+      <guid isPermaLink="true">https://arxiv.org/abs/2611.33885</guid>
+      <pubDate>Wed, 25 Nov 2026 00:00:00 +0000</pubDate>
+      <description>
+    &lt;p&gt;&lt;strong&gt;Abstract:&lt;/strong&gt; 3D layout-controlled image editing gives users explicit control over object placement and camera viewpoint. In a sequence of edits, however, the latest image can lose the appearance of an object when it is occluded or leaves view. The target layout specifies where the object should reappear, while its appearance must be recovered from earlier observations. We introduce LayoutRecall, a multi-round editor that stores and reuses appearance in the local coordinate systems of 3D boxes. Box-Surface Latent Memory retains image latents on box faces and retrieves them along rays in the target view. Geometry-Aligned Memory Conditioning supplies the retrieved tokens to a FLUX.2 editor using target-view positions, shared box-local embeddings, and object-wise attention. A correspondence loss encourages the editor to attend to matching observations during denoising. We also introduce LayoutLoop, a multi-round 3D layout-controlled image editing benchmark with calibrated layouts and designed revisits. We conduct extensive experiments on LayoutLoop and real-scene data to verify the ability of our method. The project page is at https://ykchizs.github.io/layoutrecall.github.io/.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Damped Atomic Wave Integration Neurons (DAWIN): A Universal Primitive for Continuous-Time Spatiotemporal Learning</title>
+      <link>https://huggingface.co/papers/2611.30025</link>
+      <guid isPermaLink="true">https://arxiv.org/abs/2611.30025</guid>
+      <pubDate>Mon, 23 Nov 2026 00:00:00 +0000</pubDate>
+      <description>
+    &lt;p&gt;&lt;strong&gt;Abstract:&lt;/strong&gt; Conventional artificial neurons separate spatial feature aggregation from continuous physical time, limiting their ability to model irregular observations. We introduce the Damped Atomic Wave Integration Neuron (DAWIN), a continuous-time primitive for replacing standard neural layers in MLPs, Transformers, and graph neural networks. DAWIN couples spatial projection with elapsed-time-dependent wave excitation and integrates it into a local complex state through closed-form damped evolution, avoiding numerical differential equation solvers. We show that DAWIN generalizes static sinusoidal and memoryless wave neurons on interval-augmented inputs, derive closed-form gradients, and establish bounded-input bounded-output stability for positive damping and sampling intervals bounded away from zero. An associative Triton prefix-scan implementation, DAWINLinear, uses FP32 accumulation and achieves O(log L) parallel depth for sequence length L. Across 11 parameter-matched tasks covering irregular oscillators, MuJoCo dynamics, pedestrian trajectories, and PhysioNet 2012 clinical sequences, DAWIN outperforms Neural CDE on 9 tasks and ReLU-MLP on 8. It achieves the lowest error on dense clinical dynamics (0.9531 NRMSE, winning across all 10 seeds) and ties for the best mortality prediction (0.9993 AUROC). Shuffling elapsed intervals increases error by 58.2%-77.4% on selected dynamics tasks, versus 0.06% on a time-irrelevant control, supporting reliance on physical timing. On NVIDIA B200 GPUs, parallel wave integration accelerates inference by up to 2,630 times over its serial implementation and reduces peak GPU memory by up to 97.6% relative to Mamba in the tested configurations.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>BiSAT: Bidirectionally Aligned Semantic-Acoustic Tokenization for Speech Language Models</title>
       <link>https://huggingface.co/papers/2611.30723</link>
@@ -396,22 +412,6 @@
       <pubDate>Tue, 24 Nov 2026 00:00:00 +0000</pubDate>
       <description>
     &lt;p&gt;&lt;strong&gt;Abstract:&lt;/strong&gt; Coding agents can generate runnable games from natural-language descriptions. However, a runnable game does not guarantee an excellent gameplay experience for players. In our view, a playful game should provide 1) reliable core functionality, 2) appealing visual design and assets, and 3) rich gameplay that supports exploration and progression. How agents can improve these aspects of playfulness remains underexplored. In our work, we propose Play2Evolve, a recursive game development framework with three stages: Initialization, Refinement, and Evolution. Using playfulness as feedback, agents playtest the game and diagnose issues in its functionality, visual presentation, and gameplay. Their feedback guides bug fixes and asset improvements. It also helps agents propose new gameplay and aesthetic goals for continued game evolution. To enrich game materials, we combine a video generation model with code to create appealing static and dynamic assets and integrate them into interactive gameplay. Finally, Play2Evolve achieves state-of-the-art performance among the evaluated methods, scoring 60.05 on GameCraft-Bench compared with 50.81 after Game Initialization and 52.46 for Play2Code. Human overall-quality ratings reach 3.67, compared with 2.38 and 2.43, respectively. Our code will be released at https://github.com/showlab/Play2Evolve.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>DocSEAM: Bidirectional Cross-Page Encoding for Multi-Page Document Understanding</title>
-      <link>https://huggingface.co/papers/2611.34420</link>
-      <guid isPermaLink="true">https://arxiv.org/abs/2611.34420</guid>
-      <pubDate>Wed, 25 Nov 2026 00:00:00 +0000</pubDate>
-      <description>
-    &lt;p&gt;&lt;strong&gt;Abstract:&lt;/strong&gt; Multi-page document vision-language models encode each page independently, creating a feature-level discontinuity at page boundaries: visual tokens are formed without access to content on adjacent pages, and the language model must reason over these page representations formed in isolation. We introduce DocSEAM (Document Selective Enrichment via Anchored Masking), a lightweight module inserted between a pretrained vision encoder and the language model that injects the inductive bias of local cross-page context into visual representations. For each page, DocSEAM forms a local triplet with its two neighbors, applies center-anchored masked self-attention with directional salience gates to fuse information from neighbor pages, and returns only the enriched center-page tokens, leaving the visual token count unchanged. After a supervised cross-page warm-up and multi-page fine-tuning with DocSEAM frozen, our 9B-parameter model achieves state-of-the-art results among the evaluated open-weight models of up to 10B parameters on five multi-page document VQA benchmarks. We further show that under controlled re-pagination, DocSEAM reduces sensitivity to boundary placement and improves cross-page span localization&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Mixture-of-Loops Transformer</title>
-      <link>https://huggingface.co/papers/2611.34923</link>
-      <guid isPermaLink="true">https://arxiv.org/abs/2611.34923</guid>
-      <pubDate>Wed, 25 Nov 2026 00:00:00 +0000</pubDate>
-      <description>
-    &lt;p&gt;&lt;strong&gt;Abstract:&lt;/strong&gt; Looped Transformers boost expressivity by reusing shared layers across loops, yet at the cost of efficiency. Pushing their expressivity-efficiency frontier requires rethinking the core mechanism connecting adjacent loops: What should be passed as a Transformer loops? We introduce Mixture-of-Loops Transformer (MoLT), whose Mixture-of-Loops Attention (MoLA) uses keys and values (KV) as memory for selective reuse across depths and loops. Under loop residual, MoLT-R retains the residual stream and reads local KV across loops for expressivity. Under loop KV, MoLT-KV instead restarts from embeddings and reads current-loop local KV with preceding-loop memory KV at earlier positions for efficiency. MoLT-KV eliminates same-position cross-loop dependence and, paired with loop forcing for parallel training, unlocks single-traversal Mixture-of-Loops (MoL) decoding beyond the training loop horizon. To balance efficiency and quality, we introduce U-shaped MoLT (U-MoLT), which separates memory construction from prediction readout and skips unused decoder traversals without changing predictions. In 400B-token pretraining, U-MoLT outperforms OLMo3 across 700M/1.5B dense and 3B MoE models, achieving 1.7x validation cross-entropy (CE) token efficiency at 700M while improving 3B MoE 10-domain perplexity by 0.75 and 10-task accuracy by 2.1 percentage points. In 100B-token continued pretraining of Qwen3.5-0.8B-Base, our U-MoLT adaptation lowers CE on all 11 domains over the matched baseline with 1.4x mean token efficiency. At inference, U-MoLT with MoL-Hybrid-2 matches non-looped OLMo3 latency at 996.6 vs. 1,000.6 ms on S-size (~113M) models. Code is available at https://github.com/hustvl/MoLT&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
